@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Button } from 'react-native';
+import { AsyncStorage, View, Text, StyleSheet, Button } from 'react-native';
 import useFetch from '../hooks/useFetch';
 
 const styles = StyleSheet.create({
@@ -21,19 +21,28 @@ export default ({ navigation }) => {
         <Text>{data.name}</Text>
         <Text>{data.desc}</Text>
         <Button title="Aceptar" onPress={() => {
-          fetch('https://serverless-nlm4it9xw-joaquinmelladoq.vercel.app/api/orders', {
-            method: 'POST',
-            headers: {
-              'Content-type': 'application/json'
-            },
-            body: JSON.stringify({
-              meal_id: id,
-              user_id: 'lalala',
-            })
-          }).then(() => {
-              alert('success')
-              navigation.navigate('Meals')
-            })
+          AsyncStorage.getItem('token')
+            .then(x => {
+              if (x) {
+                fetch('https://serverless-nlm4it9xw-joaquinmelladoq.vercel.app/api/orders', {
+                  method: 'POST',
+                  headers: {
+                    'Content-type': 'application/json',
+                    authorization: x,
+                  },
+                  body: JSON.stringify({
+                    meal_id: id,
+                  })
+                }).then(() => {
+                    console.log(x.status);
+                  if (x.status !== 201) {
+                    return alert('Not generated')
+                  }
+                    alert('success')
+                    navigation.navigate('Meals')
+                  })
+                }
+              })
         }}/>
         <Button title="Cancelar" onPress={() => navigation.navigate('Meals')}/>
       </>}
